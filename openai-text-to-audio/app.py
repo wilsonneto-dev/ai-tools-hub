@@ -19,7 +19,7 @@ if not AUDIO_METADATA_FILE.exists():
     with open(AUDIO_METADATA_FILE, 'w') as f:
         json.dump([], f)
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY_HEY_BRO"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def save_audio_metadata(filename, title, text, target_lang, voice, duration=None, tokens_used=None, costs=None):
     try:
