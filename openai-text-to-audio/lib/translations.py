@@ -1,7 +1,15 @@
 from openai import OpenAI
 import os
+from dataclasses import dataclass
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY_HEY_BRO"))
+
+@dataclass
+class TranslationResult:
+    translated_text: str
+    total_tokens: int
+    prompt_tokens: int
+    completion_tokens: int
 
 SUPPORTED_LANGUAGES = {
     'en': 'English',
@@ -45,13 +53,15 @@ def split_text_for_translation(text, max_length=2000):
     
     return chunks
 
-def translate_text(text, target_lang):
+def translate_text(text, target_lang) -> TranslationResult:
     """Translate text to target language using OpenAI."""
     if not target_lang or target_lang not in SUPPORTED_LANGUAGES:
         raise ValueError(f"Unsupported language: {target_lang}")
     
     chunks = split_text_for_translation(text)
     translated_chunks = []
+    total_prompt_tokens = 0
+    total_completion_tokens = 0
     
     for chunk in chunks:
         print(f"Translating chunk of length: {len(chunk)}")
@@ -63,5 +73,12 @@ def translate_text(text, target_lang):
             ]
         )
         translated_chunks.append(response.choices[0].message.content)
+        total_prompt_tokens += response.usage.prompt_tokens
+        total_completion_tokens += response.usage.completion_tokens
     
-    return '\n'.join(translated_chunks) 
+    return TranslationResult(
+        translated_text='\n'.join(translated_chunks),
+        total_tokens=total_prompt_tokens + total_completion_tokens,
+        prompt_tokens=total_prompt_tokens,
+        completion_tokens=total_completion_tokens
+    ) 

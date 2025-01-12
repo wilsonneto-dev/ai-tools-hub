@@ -168,6 +168,63 @@
     .audio-meta {
         font-size: 0.85rem;
         color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .meta-item i {
+        color: #6366f1;
+    }
+
+    .token-info {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .cost-info {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .token-badge, .cost-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        background: #f1f5f9;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .cost-badge {
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    .token-badge i, .cost-badge i {
+        color: #6366f1;
+        font-size: 0.875rem;
+    }
+
+    .cost-badge i {
+        color: #059669;
     }
 
     .progress {
@@ -397,7 +454,42 @@
                                 </audio>
                             </div>
                             <div class="audio-meta">
-                                Created: {{ audio.timestamp.split('T')[0] }} {{ audio.timestamp.split('T')[1][:8] }}
+                                <div class="meta-item">
+                                    <i class="bi bi-clock"></i>
+                                    Created: {{ audio.timestamp.split('T')[0] }} {{ audio.timestamp.split('T')[1][:8] }}
+                                </div>
+                                {% if audio.tokens_used %}
+                                <div class="token-info">
+                                    {% if audio.tokens_used.translation_tokens %}
+                                    <div class="token-badge">
+                                        <i class="bi bi-translate"></i>
+                                        Translation: {{ audio.tokens_used.translation_tokens }} tokens
+                                    </div>
+                                    {% endif %}
+                                    <div class="token-badge">
+                                        <i class="bi bi-soundwave"></i>
+                                        Speech: {{ audio.tokens_used.speech_tokens }} chars
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if audio.costs %}
+                                <div class="cost-info">
+                                    <div class="cost-badge">
+                                        <i class="bi bi-currency-dollar"></i>
+                                        Total: ${{ "%.4f"|format(audio.costs.total_cost) }}
+                                    </div>
+                                    {% if audio.costs.translation_cost > 0 %}
+                                    <div class="cost-badge">
+                                        <i class="bi bi-translate"></i>
+                                        Translation: ${{ "%.4f"|format(audio.costs.translation_cost) }}
+                                    </div>
+                                    {% endif %}
+                                    <div class="cost-badge">
+                                        <i class="bi bi-soundwave"></i>
+                                        Speech: ${{ "%.4f"|format(audio.costs.speech_cost) }}
+                                    </div>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                         <div>
@@ -557,7 +649,46 @@
                             </audio>
                         </div>
                         <div class="audio-meta">
-                            Created: ${data.timestamp.split('T')[0]} ${data.timestamp.split('T')[1].substring(0, 8)}
+                            <div class="meta-item">
+                                <i class="bi bi-clock"></i>
+                                Created: ${data.timestamp.split('T')[0]} ${data.timestamp.split('T')[1].substring(0, 8)}
+                            </div>
+                            ${data.tokens_used ? `
+                            <div class="token-info">
+                                <div class="token-badge">
+                                    <i class="bi bi-cpu"></i>
+                                    Total: ${data.tokens_used.total_tokens} tokens
+                                </div>
+                                ${data.tokens_used.translation_tokens ? `
+                                <div class="token-badge">
+                                    <i class="bi bi-translate"></i>
+                                    Translation: ${data.tokens_used.translation_tokens} tokens
+                                </div>
+                                ` : ''}
+                                <div class="token-badge">
+                                    <i class="bi bi-soundwave"></i>
+                                    Speech: ${data.tokens_used.speech_tokens} chars
+                                </div>
+                            </div>
+                            ` : ''}
+                            ${data.costs ? `
+                            <div class="cost-info">
+                                <div class="cost-badge">
+                                    <i class="bi bi-currency-dollar"></i>
+                                    Total: $${data.costs.total_cost.toFixed(4)}
+                                </div>
+                                ${data.costs.translation_cost > 0 ? `
+                                <div class="cost-badge">
+                                    <i class="bi bi-translate"></i>
+                                    Translation: $${data.costs.translation_cost.toFixed(4)}
+                                </div>
+                                ` : ''}
+                                <div class="cost-badge">
+                                    <i class="bi bi-soundwave"></i>
+                                    Speech: $${data.costs.speech_cost.toFixed(4)}
+                                </div>
+                            </div>
+                            ` : ''}
                         </div>
                     </div>
                     <div>

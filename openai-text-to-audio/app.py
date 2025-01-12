@@ -21,7 +21,7 @@ if not AUDIO_METADATA_FILE.exists():
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY_HEY_BRO"))
 
-def save_audio_metadata(filename, title, text, target_lang, voice, duration=None):
+def save_audio_metadata(filename, title, text, target_lang, voice, duration=None, tokens_used=None, costs=None):
     try:
         with open(AUDIO_METADATA_FILE, 'r') as f:
             metadata = json.load(f)
@@ -35,7 +35,9 @@ def save_audio_metadata(filename, title, text, target_lang, voice, duration=None
         'language': SUPPORTED_LANGUAGES.get(target_lang, 'Unknown'),
         'voice': AVAILABLE_VOICES.get(voice, 'Unknown'),
         'timestamp': datetime.now().isoformat(),
-        'duration': duration
+        'duration': duration,
+        'tokens_used': tokens_used or {},
+        'costs': costs or {}
     })
     
     metadata = metadata[-50:]
@@ -86,19 +88,45 @@ def convert():
         
         response = {'status': 'processing', 'message': 'Starting conversion...'}
         
-        # Pass target_lang only if translation is needed
-        convert_text_to_speech(text, output_path, target_lang if needs_translation else None, voice)
-        save_audio_metadata(filename, title, text, target_lang if needs_translation else 'en', voice)
+        # Convert text to speech and get token usage
+        result = convert_text_to_speech(text, output_path, target_lang if needs_translation else None, voice)
+        
+        # Prepare token usage data
+        tokens_used = {
+            'total_tokens': result.total_tokens,
+            'translation_tokens': result.translation_tokens,
+            'speech_tokens': result.speech_tokens
+        }
+        
+        # Prepare cost data
+        costs = {
+            'translation_cost': round(result.translation_cost, 4) if result.translation_cost else 0,
+            'speech_cost': round(result.speech_cost, 4) if result.speech_cost else 0,
+            'total_cost': round(result.total_cost, 4) if result.total_cost else 0
+        }
+        
+        # Save metadata with token usage and costs
+        save_audio_metadata(
+            filename, 
+            title, 
+            text, 
+            target_lang if needs_translation else 'en', 
+            voice,
+            tokens_used=tokens_used,
+            costs=costs
+        )
         
         return jsonify({
             'status': 'success',
             'message': 'Conversion completed',
             'audio_url': url_for('static', filename=f'audio/{filename}'),
             'title': title,
-            'text': text,
+            'text': result.translated_text if result.translated_text else text,
             'language': SUPPORTED_LANGUAGES[target_lang] if needs_translation else 'English',
             'voice': AVAILABLE_VOICES[voice],
-            'timestamp': datetime.now().isoformat()
+            'timestamp': datetime.now().isoformat(),
+            'tokens_used': tokens_used,
+            'costs': costs
         })
     
     except Exception as e:
