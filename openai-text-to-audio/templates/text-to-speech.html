@@ -4,89 +4,233 @@
 
 {% block extra_css %}
 <style>
+    .form-section {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 0.8rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
     textarea {
         resize: vertical;
-        min-height: 300px;
-        height: 300px;
+        min-height: 200px;
+        height: 200px;
         font-size: 1rem;
         line-height: 1.6;
         padding: 1rem;
     }
 
-    .audio-history {
-        margin-top: 2rem;
-        background: #f8fafc;
-        border-radius: 8px;
-        padding: 1rem;
-    }
-
-    .audio-item {
-        background: white;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    .btn-primary {
+        background: var(--primary-gradient);
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
         transition: all 0.3s ease;
     }
 
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+
+    .audio-history {
+        margin-top: 3rem;
+    }
+
+    .audio-item {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
     .audio-item:hover {
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        border-color: #6366f1;
+        transform: translateY(-2px);
     }
 
     .audio-text {
-        max-height: 100px;
-        overflow-y: auto;
+        margin: 1rem 0;
+        font-size: 0.95rem;
+        color: #4b5563;
+        line-height: 1.6;
+    }
+
+    .text-preview {
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #e5e7eb;
         margin-bottom: 0.5rem;
-        font-size: 0.9rem;
-        color: #4a5568;
+        position: relative;
+    }
+
+    .text-preview.collapsed {
+        max-height: 80px;
+        overflow: hidden;
+    }
+
+    .text-preview.collapsed::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 40px;
+        background: linear-gradient(to bottom, transparent, #f8fafc);
+        pointer-events: none;
+    }
+
+    .text-full {
+        display: none;
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #e5e7eb;
+    }
+
+    .text-full.show {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .text-section {
+        margin-bottom: 1rem;
+    }
+
+    .text-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .text-section-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #6366f1;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .text-toggle {
+        background: none;
+        border: none;
+        color: #6366f1;
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .text-toggle:hover {
+        background: #f1f5f9;
+    }
+
+    .text-toggle i {
+        transition: transform 0.3s ease;
+    }
+
+    .text-toggle.expanded i {
+        transform: rotate(180deg);
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .audio-meta {
-        font-size: 0.8rem;
-        color: #718096;
+        font-size: 0.85rem;
+        color: #6b7280;
     }
 
     .progress {
-        height: 0.5rem;
+        height: 6px;
         margin-top: 1rem;
+        border-radius: 3px;
         display: none;
+    }
+
+    .progress-bar {
+        background: var(--primary-gradient);
     }
 
     .status-message {
         margin-top: 1rem;
         display: none;
+        border-radius: 10px;
     }
 
     .delete-btn {
-        color: #e53e3e;
+        color: #ef4444;
         cursor: pointer;
-        transition: color 0.3s ease;
+        transition: all 0.3s ease;
+        padding: 0.5rem;
+        border-radius: 8px;
     }
 
     .delete-btn:hover {
-        color: #c53030;
+        color: #dc2626;
+        background: rgba(239, 68, 68, 0.1);
     }
 
     .no-audio-message {
         text-align: center;
-        color: #718096;
-        padding: 2rem;
+        color: #6b7280;
+        padding: 3rem;
+        background: #f8fafc;
+        border-radius: 12px;
+    }
+
+    .no-audio-message i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
     .language-badge, .voice-badge {
         font-size: 0.75rem;
-        padding: 0.25rem 0.5rem;
+        padding: 0.35rem 0.75rem;
         border-radius: 9999px;
         color: white;
         margin-right: 0.5rem;
+        font-weight: 500;
     }
 
     .language-badge {
-        background-color: #4a5568;
+        background: #6366f1;
     }
 
     .voice-badge {
-        background-color: #6366f1;
+        background: #8b5cf6;
     }
 
     .language-select-container {
@@ -96,25 +240,46 @@
 
     .language-select-container.show {
         display: block;
-    }
-
-    .form-check {
-        margin-bottom: 1rem;
+        animation: slideDown 0.3s ease;
     }
 
     .audio-title {
         font-weight: 600;
         font-size: 1.1rem;
-        color: #2d3748;
-        margin-bottom: 0.5rem;
+        color: #1f2937;
+        margin-bottom: 0.75rem;
     }
 
-    /* Add a subtle hint about text length */
     .text-hint {
         font-size: 0.85rem;
-        color: #718096;
-        margin-top: 0.5rem;
-        font-style: italic;
+        color: #6b7280;
+        margin-top: 0.75rem;
+    }
+
+    .form-check-input:checked {
+        background-color: #6366f1;
+        border-color: #6366f1;
+    }
+
+    audio {
+        width: 100%;
+        height: 36px;
+        margin: 0.5rem 0;
+    }
+
+    audio::-webkit-media-controls-panel {
+        background: #f8fafc;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 </style>
 {% endblock %}
@@ -122,60 +287,62 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-12">
-        <h1 class="text-center mb-4">Text to Speech Converter</h1>
+        <h1 class="mb-4">Text to Speech Converter</h1>
         
-        <form id="convertForm">
-            <div class="mb-3">
-                <label for="title" class="form-label">Title</label>
-                <input type="text" class="form-control" id="title" name="title" placeholder="Enter a title for your audio (optional)">
-            </div>
-            <div class="mb-3">
-                <label for="text" class="form-label">Text</label>
-                <textarea 
-                    class="form-control"
-                    placeholder="Enter your text here... You can paste long articles or large texts, they will be processed automatically."
-                    name="text"
-                    id="text"
-                    required
-                ></textarea>
-                <div class="text-hint">
-                    <i class="bi bi-info-circle"></i> You can paste large texts or articles - they will be automatically processed in chunks
+        <div class="form-section">
+            <form id="convertForm">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="title" name="title" placeholder="Give your audio a memorable title">
                 </div>
-            </div>
-            <div class="mb-3">
-                <label for="voice" class="form-label">Voice</label>
-                <select class="form-select" name="voice" id="voice" required>
-                    {% for code, name in voices.items() %}
-                    <option value="{{ code }}">{{ name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" id="needsTranslation" name="needs_translation">
-                <label class="form-check-label" for="needsTranslation">
-                    Translate text before converting to speech
-                </label>
-            </div>
-            <div class="mb-3 language-select-container" id="languageContainer">
-                <label for="language" class="form-label">Target Language</label>
-                <select class="form-select" name="language" id="language">
-                    {% for code, name in languages.items() %}
-                    {% if code != 'en' %}
-                    <option value="{{ code }}">{{ name }}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">
-                <i class="bi bi-soundwave"></i> Convert to Speech
-            </button>
-        </form>
+                <div class="mb-3">
+                    <label for="text" class="form-label">Text</label>
+                    <textarea 
+                        class="form-control"
+                        placeholder="Enter your text here... You can paste long articles or large texts, they will be processed automatically."
+                        name="text"
+                        id="text"
+                        required
+                    ></textarea>
+                    <div class="text-hint">
+                        <i class="bi bi-info-circle"></i> You can paste large texts or articles - they will be automatically processed in chunks
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="voice" class="form-label">Voice</label>
+                    <select class="form-select" name="voice" id="voice" required>
+                        {% for code, name in voices.items() %}
+                        <option value="{{ code }}">{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="needsTranslation" name="needs_translation">
+                    <label class="form-check-label" for="needsTranslation">
+                        Translate text before converting to speech
+                    </label>
+                </div>
+                <div class="mb-3 language-select-container" id="languageContainer">
+                    <label for="language" class="form-label">Target Language</label>
+                    <select class="form-select" name="language" id="language">
+                        {% for code, name in languages.items() %}
+                        {% if code != 'en' %}
+                        <option value="{{ code }}">{{ name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-soundwave"></i> Convert to Speech
+                </button>
+            </form>
 
-        <div class="progress">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+            </div>
+
+            <div class="alert status-message" role="alert"></div>
         </div>
-
-        <div class="alert status-message" role="alert"></div>
 
         <!-- Audio History Section -->
         <div class="audio-history">
@@ -189,22 +356,51 @@
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
                             <div class="audio-title">{{ audio.title or 'Untitled' }}</div>
-                            <div class="audio-text">
-                                <span class="language-badge">{{ audio.language }}</span>
+                            <div>
+                                <span class="language-badge">
+                                    <i class="bi bi-translate"></i>
+                                    {{ audio.language }}
+                                </span>
                                 {% if audio.voice %}
-                                <span class="voice-badge">{{ audio.voice }}</span>
+                                <span class="voice-badge">
+                                    <i class="bi bi-person-voice"></i>
+                                    {{ audio.voice }}
+                                </span>
                                 {% endif %}
-                                {{ audio.text }}
                             </div>
-                            <audio controls class="w-100 mb-2">
-                                <source src="{{ url_for('static', filename='audio/' + audio.filename) }}" type="audio/mpeg">
-                                Your browser does not support the audio element.
-                            </audio>
+                            <div class="audio-text">
+                                <div class="text-preview collapsed">
+                                    {{ audio.text[:200] }}{% if audio.text|length > 200 %}...{% endif %}
+                                </div>
+                                <div class="text-full">
+                                    {% if audio.language != 'English' %}
+                                    <div class="text-section">
+                                        <div class="text-section-title">
+                                            <i class="bi bi-file-text"></i>
+                                            Original Text
+                                        </div>
+                                        {{ audio.text }}
+                                    </div>
+                                    {% else %}
+                                    {{ audio.text }}
+                                    {% endif %}
+                                </div>
+                                <button class="text-toggle" onclick="toggleText(this)" type="button">
+                                    <i class="bi bi-chevron-down"></i>
+                                    Show More
+                                </button>
+                            </div>
+                            <div class="audio-controls">
+                                <audio controls>
+                                    <source src="{{ url_for('static', filename='audio/' + audio.filename) }}" type="audio/mpeg">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
                             <div class="audio-meta">
                                 Created: {{ audio.timestamp.split('T')[0] }} {{ audio.timestamp.split('T')[1][:8] }}
                             </div>
                         </div>
-                        <div class="ms-3">
+                        <div>
                             <i class="bi bi-trash delete-btn" onclick="deleteAudio('{{ audio.filename }}')"></i>
                         </div>
                     </div>
@@ -212,7 +408,7 @@
                 {% endfor %}
             {% else %}
                 <div class="no-audio-message">
-                    <i class="bi bi-music-note-list display-4 mb-3"></i>
+                    <i class="bi bi-music-note-list"></i>
                     <p>No audio files yet. Convert some text to get started!</p>
                 </div>
             {% endif %}
@@ -231,7 +427,7 @@
     const languageContainer = document.getElementById('languageContainer');
     const languageSelect = document.getElementById('language');
 
-    // Toggle language selector visibility
+    // Toggle language selector visibility with animation
     needsTranslation.addEventListener('change', function() {
         languageContainer.classList.toggle('show', this.checked);
         languageSelect.required = this.checked;
@@ -257,8 +453,12 @@
 
             if (response.ok) {
                 const audioItem = document.querySelector(`[data-filename="${filename}"]`);
-                audioItem.remove();
-                showStatus('Audio deleted successfully', 'success');
+                audioItem.style.opacity = '0';
+                audioItem.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    audioItem.remove();
+                    showStatus('Audio deleted successfully', 'success');
+                }, 300);
                 setTimeout(hideStatus, 3000);
             } else {
                 throw new Error('Failed to delete audio');
@@ -279,7 +479,6 @@
         try {
             const formData = new FormData(form);
             
-            // If translation is not needed, don't send the language parameter
             if (!needsTranslation.checked) {
                 formData.delete('language');
             }
@@ -315,24 +514,53 @@
             const audioItem = document.createElement('div');
             audioItem.className = 'audio-item';
             audioItem.dataset.filename = data.filename;
+            audioItem.style.opacity = '0';
+            audioItem.style.transform = 'translateY(20px)';
             audioItem.innerHTML = `
                 <div class="d-flex justify-content-between align-items-start">
                     <div class="flex-grow-1">
                         <div class="audio-title">${data.title || 'Untitled'}</div>
-                        <div class="audio-text">
-                            <span class="language-badge">${data.language}</span>
-                            <span class="voice-badge">${data.voice}</span>
-                            ${data.text}
+                        <div>
+                            <span class="language-badge">
+                                <i class="bi bi-translate"></i>
+                                ${data.language}
+                            </span>
+                            <span class="voice-badge">
+                                <i class="bi bi-person-voice"></i>
+                                ${data.voice}
+                            </span>
                         </div>
-                        <audio controls class="w-100 mb-2">
-                            <source src="${data.audio_url}" type="audio/mpeg">
-                            Your browser does not support the audio element.
-                        </audio>
+                        <div class="audio-text">
+                            <div class="text-preview collapsed">
+                                ${data.text.substring(0, 200)}${data.text.length > 200 ? '...' : ''}
+                            </div>
+                            <div class="text-full">
+                                ${data.language !== 'English' ? `
+                                <div class="text-section">
+                                    <div class="text-section-title">
+                                        <i class="bi bi-file-text"></i>
+                                        Original Text
+                                    </div>
+                                    ${data.text}
+                                </div>
+                                ` : data.text}
+                            </div>
+                            <button class="text-toggle" onclick="toggleText(this)" type="button">
+                                <i class="bi bi-chevron-down"></i>
+                                Show More
+                            </button>
+                        </div>
+                        <div class="audio-controls">
+                            <audio controls>
+                                <source src="${data.audio_url}" type="audio/mpeg">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
                         <div class="audio-meta">
                             Created: ${data.timestamp.split('T')[0]} ${data.timestamp.split('T')[1].substring(0, 8)}
                         </div>
                     </div>
-                    <div class="ms-3">
+                    <div>
                         <i class="bi bi-trash delete-btn" onclick="deleteAudio('${data.filename}')"></i>
                     </div>
                 </div>
@@ -344,6 +572,12 @@
             } else {
                 audioHistory.appendChild(audioItem);
             }
+
+            // Animate the new item
+            requestAnimationFrame(() => {
+                audioItem.style.opacity = '1';
+                audioItem.style.transform = 'translateY(0)';
+            });
 
             showStatus('Conversion completed successfully!', 'success');
             form.reset();
@@ -358,5 +592,27 @@
             }, 3000);
         }
     });
+
+    function toggleText(button) {
+        const textContainer = button.parentElement;
+        const preview = textContainer.querySelector('.text-preview');
+        const full = textContainer.querySelector('.text-full');
+        
+        preview.classList.toggle('collapsed');
+        full.classList.toggle('show');
+        button.classList.toggle('expanded');
+        
+        if (button.classList.contains('expanded')) {
+            button.innerHTML = `
+                <i class="bi bi-chevron-up"></i>
+                Show Less
+            `;
+        } else {
+            button.innerHTML = `
+                <i class="bi bi-chevron-down"></i>
+                Show More
+            `;
+        }
+    }
 </script>
 {% endblock %} 

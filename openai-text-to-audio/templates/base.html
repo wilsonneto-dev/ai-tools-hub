@@ -9,77 +9,152 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --sidebar-width: 280px;
+            --content-max-width: 1200px;
+        }
+
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f6f7ff 0%, #eef1ff 100%);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         
         .sidebar {
-            background: rgba(255, 255, 255, 0.95);
+            background: white;
             min-height: 100vh;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            width: var(--sidebar-width);
+            position: fixed;
+            left: 0;
+            top: 0;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            z-index: 1000;
+            padding: 2rem 1rem;
+        }
+
+        .sidebar .brand {
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+
+        .sidebar .brand h3 {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            margin: 0;
         }
 
         .sidebar .nav-link {
-            color: #2d3748;
-            padding: 0.8rem 1rem;
-            border-radius: 8px;
-            margin: 0.2rem 0;
+            color: #4b5563;
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            margin: 0.3rem 0;
             transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
         }
 
         .sidebar .nav-link:hover,
         .sidebar .nav-link.active {
-            background: #667eea;
+            background: var(--primary-gradient);
             color: white;
+            transform: translateX(5px);
         }
 
         .sidebar .nav-link i {
-            margin-right: 10px;
+            margin-right: 12px;
+            font-size: 1.2rem;
         }
 
         .main-content {
+            margin-left: var(--sidebar-width);
             padding: 2rem;
+            max-width: var(--content-max-width);
         }
 
         .content-card {
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .content-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
         }
 
         @media (max-width: 768px) {
             .sidebar {
+                width: 100%;
                 min-height: auto;
+                position: relative;
+                padding: 1rem;
             }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .content-card {
+                border-radius: 12px;
+                padding: 1.5rem;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #6366f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4f46e5;
         }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
+    <div class="container-fluid p-0">
+        <div class="row g-0">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar py-3">
-                <h3 class="text-center mb-4">AI Tools</h3>
+            <div class="sidebar">
+                <div class="brand">
+                    <h3>AI Tools</h3>
+                </div>
                 <nav class="nav flex-column">
-                  
                     <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
                         <i class="bi bi-house-fill"></i>
                         Home
                     </a>
-                  
                     <a class="nav-link {% if request.path == '/text-to-speech' %}active{% endif %}" href="/text-to-speech">
                         <i class="bi bi-mic-fill"></i>
                         Text to Speech
                     </a>
-                
                 </nav>
             </div>
 
             <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 main-content">
+            <div class="main-content">
                 <div class="content-card">
                     {% block content %}{% endblock %}
                 </div>

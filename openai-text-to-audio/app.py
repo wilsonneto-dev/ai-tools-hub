@@ -88,7 +88,7 @@ def convert():
         
         # Pass target_lang only if translation is needed
         convert_text_to_speech(text, output_path, target_lang if needs_translation else None, voice)
-        save_audio_metadata(filename, title, text[:50], target_lang if needs_translation else 'en', voice)
+        save_audio_metadata(filename, title, text, target_lang if needs_translation else 'en', voice)
         
         return jsonify({
             'status': 'success',
