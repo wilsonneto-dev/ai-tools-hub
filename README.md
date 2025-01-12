@@ -18,6 +18,12 @@ A tool that provides various AI-powered tools for content processing and generat
 - History of conversions with playback capability
 - Support for long texts with automatic chunking
 
+## The tool
+
+![alt text](./docs/image.png)
+
+![alt text](./docs/image-1.png)
+
 ## Getting Started
 
 ### Prerequisites
