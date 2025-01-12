@@ -27,9 +27,17 @@ A tool that provides various AI-powered tools for content processing and generat
 ## Getting Started
 
 ### Prerequisites
+
+**Running with Docker**:
+
+- This will be the preferred way, but it has not been implemented yet
+
+**Running without Docker/Container**:
+
 - Python 3.8 or higher
 - OpenAI API key
 - Virtual environment (recommended)
+- FFMPEG (for audio handling)
 
 ### Installation
 
