@@ -9,8 +9,8 @@ from typing import Optional
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY_HEY_BRO"))
 
 # Cost rates per million units
-TTS_COST_PER_MILLION_CHARS = 15.00  # $15 per 1M characters
-TRANSLATION_COST_PER_MILLION_TOKENS = 6.00  # $6 per 1M tokens
+TTS_COST_PER_MILLION_CHARS = 15.00  # $15 per 1M characters - Open AI tts1
+TRANSLATION_COST_PER_MILLION_TOKENS = 6.00  # $6 per 1M tokens - Open AI gpt3 turbo
 
 @dataclass
 class ConversionResult:
