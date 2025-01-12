@@ -85,7 +85,7 @@ def convert():
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/delete-audio/<filename>', methods=['POST'])
-def delete_audio():
+def delete_audio(filename):
     try:
         file_path = app.config['STATIC_AUDIO'] / filename
         if file_path.exists():
