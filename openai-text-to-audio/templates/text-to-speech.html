@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Text to Speech - AI Tools{% endblock %}
+
+{% block extra_css %}
+<style>
+    textarea {
+        resize: vertical;
+        min-height: 150px;
+    }
+
+    .audio-history {
+        margin-top: 2rem;
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+    .audio-item {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+
+    .audio-item:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .audio-text {
+        max-height: 100px;
+        overflow-y: auto;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: #4a5568;
+    }
+
+    .audio-meta {
+        font-size: 0.8rem;
+        color: #718096;
+    }
+
+    .progress {
+        height: 0.5rem;
+        margin-top: 1rem;
+        display: none;
+    }
+
+    .status-message {
+        margin-top: 1rem;
+        display: none;
+    }
+
+    .delete-btn {
+        color: #e53e3e;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .delete-btn:hover {
+        color: #c53030;
+    }
+
+    .no-audio-message {
+        text-align: center;
+        color: #718096;
+        padding: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12">
+        <h1 class="text-center mb-4">Text to Speech Converter</h1>
+        
+        <form id="convertForm">
+            <div class="mb-3">
+                <textarea 
+                    class="form-control"
+                    placeholder="Enter your text here..."
+                    name="text"
+                    required
+                ></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-soundwave"></i> Convert to Speech
+            </button>
+        </form>
+
+        <div class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+        </div>
+
+        <div class="alert status-message" role="alert"></div>
+
+        <!-- Audio History Section -->
+        <div class="audio-history">
+            <h3 class="mb-4">
+                <i class="bi bi-clock-history"></i> Recent Conversions
+            </h3>
+            
+            {% if audio_files %}
+                {% for audio in audio_files %}
+                <div class="audio-item" data-filename="{{ audio.filename }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="audio-text">{{ audio.text }}</div>
+                            <audio controls class="w-100 mb-2">
+                                <source src="{{ url_for('static', filename='audio/' + audio.filename) }}" type="audio/mpeg">
+                                Your browser does not support the audio element.
+                            </audio>
+                            <div class="audio-meta">
+                                Created: {{ audio.timestamp.split('T')[0] }} {{ audio.timestamp.split('T')[1][:8] }}
+                            </div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-trash delete-btn" onclick="deleteAudio('{{ audio.filename }}')"></i>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-audio-message">
+                    <i class="bi bi-music-note-list display-4 mb-3"></i>
+                    <p>No audio files yet. Convert some text to get started!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const form = document.getElementById('convertForm');
+    const progressBar = document.querySelector('.progress');
+    const progressBarInner = document.querySelector('.progress-bar');
+    const statusMessage = document.querySelector('.status-message');
+
+    function showStatus(message, type = 'info') {
+        statusMessage.textContent = message;
+        statusMessage.className = `alert status-message alert-${type}`;
+        statusMessage.style.display = 'block';
+    }
+
+    function hideStatus() {
+        statusMessage.style.display = 'none';
+    }
+
+    async function deleteAudio(filename) {
+        if (!confirm('Are you sure you want to delete this audio?')) return;
+
+        try {
+            const response = await fetch(`/delete-audio/${filename}`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                const audioItem = document.querySelector(`[data-filename="${filename}"]`);
+                audioItem.remove();
+                showStatus('Audio deleted successfully', 'success');
+                setTimeout(hideStatus, 3000);
+            } else {
+                throw new Error('Failed to delete audio');
+            }
+        } catch (err) {
+            showStatus('Error deleting audio: ' + err.message, 'danger');
+        }
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const button = form.querySelector('button');
+        button.disabled = true;
+        progressBar.style.display = 'block';
+        progressBarInner.style.width = '0%';
+        hideStatus();
+
+        try {
+            const formData = new FormData(form);
+            
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 5;
+                if (progress > 90) clearInterval(progressInterval);
+                progressBarInner.style.width = `${progress}%`;
+            }, 500);
+
+            showStatus('Converting text to speech...', 'info');
+
+            const response = await fetch('/convert', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Conversion failed');
+            }
+
+            const data = await response.json();
+            
+            clearInterval(progressInterval);
+            progressBarInner.style.width = '100%';
+            
+            const audioHistory = document.querySelector('.audio-history');
+            const noAudioMessage = document.querySelector('.no-audio-message');
+            if (noAudioMessage) noAudioMessage.remove();
+
+            const audioItem = document.createElement('div');
+            audioItem.className = 'audio-item';
+            audioItem.dataset.filename = data.filename;
+            audioItem.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="audio-text">${data.text}</div>
+                        <audio controls class="w-100 mb-2">
+                            <source src="${data.audio_url}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                        <div class="audio-meta">
+                            Created: ${data.timestamp.split('T')[0]} ${data.timestamp.split('T')[1].substring(0, 8)}
+                        </div>
+                    </div>
+                    <div class="ms-3">
+                        <i class="bi bi-trash delete-btn" onclick="deleteAudio('${data.filename}')"></i>
+                    </div>
+                </div>
+            `;
+
+            const firstItem = audioHistory.querySelector('.audio-item');
+            if (firstItem) {
+                audioHistory.insertBefore(audioItem, firstItem);
+            } else {
+                audioHistory.appendChild(audioItem);
+            }
+
+            showStatus('Conversion completed successfully!', 'success');
+            form.reset();
+        } catch (err) {
+            showStatus(err.message, 'danger');
+        } finally {
+            button.disabled = false;
+            setTimeout(() => {
+                progressBar.style.display = 'none';
+                hideStatus();
+            }, 3000);
+        }
+    });
+</script>
+{% endblock %} 

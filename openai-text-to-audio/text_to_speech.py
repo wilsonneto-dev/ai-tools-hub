@@ -53,13 +53,3 @@ def convert_text_to_speech(input_text, output_path):
 
     print(f"Final audio saved on: {output_path}")
     return output_path
-
-if __name__ == "__main__":
-    data_path = Path(__file__).parent / "data"
-    input_file = data_path / "text.txt"
-    output_file = data_path / "text.mp3"
-    
-    with open(input_file, "r") as file:
-        input_text = file.read()
-    
-    convert_text_to_speech(input_text, output_file)

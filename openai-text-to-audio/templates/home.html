@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Home - AI Tools{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12">
+        <h1 class="text-center mb-4">Welcome to AI Tools</h1>
+        
+        <div class="row g-4">
+            <!-- Text to Speech Card -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 hover-card">
+                    <div class="card-body text-center p-4">
+                        <div class="display-4 mb-3 text-primary">
+                            <i class="bi bi-mic-fill"></i>
+                        </div>
+                        <h3 class="card-title">Text to Speech</h3>
+                        <p class="card-text">Convert your text into natural-sounding speech using advanced AI technology.</p>
+                        <a href="/text-to-speech" class="btn btn-primary">
+                            <i class="bi bi-arrow-right-circle"></i> Get Started
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+
+    .display-4 {
+        font-size: 3rem;
+    }
+</style>
+{% endblock %} 
