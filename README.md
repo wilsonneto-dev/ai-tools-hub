@@ -1,10 +1,7 @@
 # AI Tools Hub
 
-> The intention is to create a hub for you to be able to use it by just adding your Open API key. \
-> It is not intended to be a published app; it is intended to be a local tool.
-
-
-A tool that provides various AI-powered tools for content processing and generation. Currently featuring Text-to-Speech conversion with translation capabilities, with plans to expand to more AI tools in the future.
+A tool that provides various AI-powered tools in your localhost, just using an Open AI API key. \
+Currently featuring Text-to-Speech conversion with translation capabilities, with plans to expand to more AI tools in the future, such as image generation, text summarization, and many other features.
 
 
 ## Current Features
