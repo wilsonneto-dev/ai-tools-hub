@@ -392,6 +392,152 @@
         color: #065f46;
         opacity: 0.75;
     }
+
+    .stats-badges {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .stat-badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f1f5f9;
+        color: #475569;
+        white-space: nowrap;
+    }
+
+    .stat-badge i {
+        color: #6366f1;
+        font-size: 0.875rem;
+        flex-shrink: 0;
+    }
+
+    .stat-badge small {
+        color: #64748b;
+        margin-left: 0.25rem;
+    }
+
+    .processing-info {
+        font-size: 0.875rem;
+    }
+
+    .processing-info .token-info,
+    .processing-info .cost-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin: 0;
+        padding: 0;
+        border: none;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.4rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .action-btn.download-btn {
+        background: #f1f5f9;
+        color: #6366f1;
+        border-color: #e2e8f0;
+    }
+
+    .action-btn.download-btn:hover {
+        background: #e2e8f0;
+        color: #4f46e5;
+    }
+
+    .action-btn.article-btn {
+        background: #ecfdf5;
+        color: #059669;
+        border-color: #d1fae5;
+    }
+
+    .action-btn.article-btn:hover {
+        background: #d1fae5;
+        color: #047857;
+    }
+
+    .action-btn.delete-btn {
+        background: #fef2f2;
+        color: #dc2626;
+        border-color: #fee2e2;
+    }
+
+    .action-btn.delete-btn:hover {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .table {
+        --bs-table-striped-bg: #f8fafc;
+    }
+
+    .table > :not(caption) > * > * {
+        padding: 1rem;
+    }
+
+    .table thead {
+        background: #f1f5f9;
+    }
+
+    .table thead th {
+        font-weight: 600;
+        color: #475569;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+    }
+
+    .processing-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .processing-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .processing-info {
+        font-size: 0.875rem;
+    }
+
+    .processing-info .token-info,
+    .processing-info .cost-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin: 0;
+        padding: 0;
+    }
 </style>
 {% endblock %}
 
@@ -538,36 +684,38 @@
 
                     <div id="costInfo" class="cost-info" style="display: none;">
                         <i class="bi bi-receipt"></i>
-                        <div>
+                        <div style="width: 100%;">
                             <strong>Processing Information</strong><br>
-                            <div class="token-info">
-                                <div class="token-badge">
-                                    <i class="bi bi-cpu"></i>
-                                    Total: <span id="tokenCount"></span> tokens
+                            <div class="processing-grid">
+                                <div class="token-info mb-0 border-0 pt-0">
+                                    <div class="token-badge">
+                                        <i class="bi bi-cpu"></i>
+                                        Total: <span id="tokenCount"></span> tokens
+                                    </div>
+                                    <div class="token-badge">
+                                        <i class="bi bi-arrow-down"></i>
+                                        Input: <span id="promptTokens"></span> tokens
+                                    </div>
+                                    <div class="token-badge">
+                                        <i class="bi bi-arrow-up"></i>
+                                        Output: <span id="completionTokens"></span> tokens
+                                    </div>
                                 </div>
-                                <div class="token-badge">
-                                    <i class="bi bi-arrow-down"></i>
-                                    Input: <span id="promptTokens"></span> tokens
-                                </div>
-                                <div class="token-badge">
-                                    <i class="bi bi-arrow-up"></i>
-                                    Output: <span id="completionTokens"></span> tokens
-                                </div>
-                            </div>
-                            <div class="cost-info">
-                                <div class="cost-badge">
-                                    <i class="bi bi-currency-dollar"></i>
-                                    Total: $<span id="costAmount"></span>
-                                </div>
-                                <div class="cost-badge">
-                                    <i class="bi bi-arrow-down"></i>
-                                    Input: $<span id="inputCost"></span>
-                                    <small>($10.00 per 1M tokens)</small>
-                                </div>
-                                <div class="cost-badge">
-                                    <i class="bi bi-arrow-up"></i>
-                                    Output: $<span id="outputCost"></span>
-                                    <small>($30.00 per 1M tokens)</small>
+                                <div class="cost-info mb-0 p-0 bg-transparent border-0">
+                                    <div class="cost-badge">
+                                        <i class="bi bi-currency-dollar"></i>
+                                        Total: $<span id="costAmount"></span>
+                                    </div>
+                                    <div class="cost-badge">
+                                        <i class="bi bi-arrow-down"></i>
+                                        Input: $<span id="inputCost"></span>
+                                        <small>($10.00 per 1M tokens)</small>
+                                    </div>
+                                    <div class="cost-badge">
+                                        <i class="bi bi-arrow-up"></i>
+                                        Output: $<span id="outputCost"></span>
+                                        <small>($30.00 per 1M tokens)</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -585,67 +733,88 @@
             <h3 class="mb-4">Processing History</h3>
             {% if vtt_files %}
             <div class="table-responsive">
-                <table class="table">
+                <table class="table align-middle">
                     <thead>
                         <tr>
-                            <th>Original File</th>
-                            <th>Language</th>
                             <th>Date</th>
+                            <th>Language</th>
                             <th>Stats</th>
-                            <th>Tokens</th>
-                            <th>Cost</th>
+                            <th>Processing Information</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for file in vtt_files %}
                         <tr>
-                            <td>{{ file.original_filename or 'Unknown' }}</td>
-                            <td>{{ file.language or 'N/A' }}</td>
                             <td>{{ file.timestamp.split('T')[0] }}</td>
+                            <td>{{ file.language or 'N/A' }}</td>
                             <td>
                                 {% if file.vtt_stats %}
-                                <small class="text-muted">
-                                    Lines: {{ file.vtt_stats.initial_lines }} → {{ file.vtt_stats.final_lines }}<br>
-                                    Timestamps: {{ file.vtt_stats.timestamps_removed }} removed
-                                </small>
+                                <div class="stats-badges">
+                                    <div class="stat-badge">
+                                        <i class="bi bi-file-text"></i>
+                                        Lines: {{ file.vtt_stats.initial_lines }} → {{ file.vtt_stats.final_lines }}
+                                        <small class="text-muted">({{ file.vtt_stats.lines_removed }} removed)</small>
+                                    </div>
+                                    <div class="stat-badge">
+                                        <i class="bi bi-type"></i>
+                                        Chars: {{ file.vtt_stats.initial_chars }} → {{ file.vtt_stats.final_chars }}
+                                        <small class="text-muted">({{ file.vtt_stats.chars_removed }} removed)</small>
+                                    </div>
+                                </div>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if file.tokens_used %}
-                                <small class="text-muted">
-                                    Total: {{ file.tokens_used.total_tokens }}<br>
-                                    Input: {{ file.tokens_used.prompt_tokens }}<br>
-                                    Output: {{ file.tokens_used.completion_tokens }}
-                                </small>
+                                <div class="processing-info">
+                                    <div class="processing-grid">
+                                        <div class="token-info mb-0 border-0">
+                                            <div class="token-badge">
+                                                <i class="bi bi-cpu"></i>
+                                                Total: {{ file.tokens_used.total_tokens }}
+                                            </div>
+                                            <div class="token-badge">
+                                                <i class="bi bi-arrow-down"></i>
+                                                Input: {{ file.tokens_used.prompt_tokens }}
+                                            </div>
+                                            <div class="token-badge">
+                                                <i class="bi bi-arrow-up"></i>
+                                                Output: {{ file.tokens_used.completion_tokens }}
+                                            </div>
+                                        </div>
+                                        <div class="cost-info p-0 bg-transparent border-0">
+                                            <div class="cost-badge">
+                                                <i class="bi bi-currency-dollar"></i>
+                                                Total: ${{ "%.4f"|format(file.costs.total_cost) }}
+                                            </div>
+                                            <div class="cost-badge">
+                                                <i class="bi bi-arrow-down"></i>
+                                                Input: ${{ "%.4f"|format(file.costs.input_cost) }}
+                                            </div>
+                                            <div class="cost-badge">
+                                                <i class="bi bi-arrow-up"></i>
+                                                Output: ${{ "%.4f"|format(file.costs.output_cost) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 {% else %}
-                                N/A
+                                <div class="text-muted">No article generated</div>
                                 {% endif %}
                             </td>
                             <td>
-                                {% if file.costs %}
-                                <small class="text-muted">
-                                    Total: ${{ "%.4f"|format(file.costs.total_cost) }}<br>
-                                    Input: ${{ "%.4f"|format(file.costs.input_cost) }}<br>
-                                    Output: ${{ "%.4f"|format(file.costs.output_cost) }}
-                                </small>
-                                {% else %}
-                                N/A
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="btn-group">
+                                <div class="action-buttons">
                                     <a href="{{ url_for('download_file', filename=file.cleaned_filename) }}" 
-                                       class="btn btn-sm btn-outline-primary">
+                                       class="action-btn download-btn">
                                         <i class="bi bi-download"></i> Text
                                     </a>
                                     {% if file.article_filename %}
                                     <a href="{{ url_for('download_file', filename=file.article_filename) }}" 
-                                       class="btn btn-sm btn-outline-success">
-                                        <i class="bi bi-download"></i> Article
+                                       class="action-btn article-btn">
+                                        <i class="bi bi-file-earmark-text"></i> Article
                                     </a>
                                     {% endif %}
-                                    <button class="btn btn-sm btn-outline-danger delete-vtt" 
+                                    <button class="action-btn delete-btn delete-vtt" 
                                             data-filename="{{ file.cleaned_filename }}">
                                         <i class="bi bi-trash"></i>
                                     </button>
