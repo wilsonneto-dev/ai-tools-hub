@@ -1,0 +1,907 @@
+{% extends "base.html" %}
+
+{% block title %}VTT Processor - AI Tools{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css">
+<style>
+    .form-section {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .preview-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-top: 2rem;
+        border: 2px solid #e5e7eb;
+    }
+
+    .preview-section.empty {
+        border: 2px dashed #e5e7eb;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        color: #6b7280;
+    }
+
+    .preview-section.empty i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .nav-tabs {
+        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 1rem;
+    }
+
+    .nav-tabs .nav-link {
+        color: #6b7280;
+        border: none;
+        padding: 0.75rem 1rem;
+        margin-right: 1rem;
+        font-weight: 500;
+        position: relative;
+    }
+
+    .nav-tabs .nav-link:hover {
+        color: #4b5563;
+        border: none;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #6366f1;
+        background: none;
+        border: none;
+    }
+
+    .nav-tabs .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--primary-gradient);
+    }
+
+    .markdown-preview {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.6;
+        color: #1f2937;
+    }
+
+    .markdown-preview h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #111827;
+    }
+
+    .markdown-preview h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 2rem 0 1rem;
+        color: #1f2937;
+    }
+
+    .markdown-preview h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 1.5rem 0 1rem;
+        color: #374151;
+    }
+
+    .markdown-preview p {
+        margin-bottom: 1rem;
+    }
+
+    .markdown-preview ul, .markdown-preview ol {
+        margin-bottom: 1rem;
+        padding-left: 1.5rem;
+    }
+
+    .markdown-preview li {
+        margin-bottom: 0.5rem;
+    }
+
+    .markdown-preview blockquote {
+        border-left: 4px solid #6366f1;
+        padding-left: 1rem;
+        margin: 1rem 0;
+        color: #4b5563;
+        font-style: italic;
+    }
+
+    .markdown-preview code {
+        background: #f1f5f9;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-size: 0.875em;
+        color: #6366f1;
+    }
+
+    .markdown-preview pre {
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 1rem 0;
+    }
+
+    .markdown-preview pre code {
+        background: none;
+        padding: 0;
+        color: inherit;
+    }
+
+    .cost-info {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: #ecfdf5;
+        border-radius: 8px;
+        color: #047857;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .cost-info i {
+        font-size: 1.25rem;
+    }
+
+    .file-upload-wrapper {
+        border: 2px dashed #e5e7eb;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .file-upload-wrapper:hover {
+        border-color: #6366f1;
+        background: #f8fafc;
+    }
+
+    .file-upload-wrapper i {
+        font-size: 2rem;
+        color: #6366f1;
+        margin-bottom: 1rem;
+    }
+
+    .file-upload-wrapper.drag-over {
+        border-color: #6366f1;
+        background: #f1f5f9;
+    }
+
+    #fileInput {
+        display: none;
+    }
+
+    .progress {
+        height: 6px;
+        margin-top: 1rem;
+        border-radius: 3px;
+        display: none;
+    }
+
+    .progress-bar {
+        background: var(--primary-gradient);
+    }
+
+    .status-message {
+        margin-top: 1rem;
+        display: none;
+        border-radius: 10px;
+    }
+
+    .download-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        background: #f1f5f9;
+        color: #6366f1;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
+    }
+
+    .download-btn:hover {
+        background: #e2e8f0;
+        color: #4f46e5;
+        border-color: #d1d5db;
+    }
+
+    .download-btn i {
+        font-size: 1.1rem;
+    }
+
+    .token-breakdown {
+        margin-left: 1rem;
+        margin-top: 0.5rem;
+        color: #4b5563;
+    }
+
+    .cost-detail {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-left: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .cost-breakdown {
+        border-top: 1px solid rgba(4, 120, 87, 0.2);
+        padding-top: 0.5rem;
+        color: #047857;
+    }
+
+    .total-cost {
+        margin-top: 0.5rem;
+        font-weight: 600;
+        color: #047857;
+    }
+
+    .vtt-stats {
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #e5e7eb;
+    }
+
+    .vtt-stats h5 {
+        color: #374151;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.5rem;
+        border-radius: 6px;
+        background: white;
+        border: 1px solid #e5e7eb;
+    }
+
+    .stat-item i {
+        font-size: 1.25rem;
+        color: #6366f1;
+        margin-top: 0.25rem;
+    }
+
+    .stat-details {
+        flex: 1;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+        font-weight: 500;
+        color: #111827;
+    }
+
+    .stat-value small {
+        font-size: 0.75rem;
+        margin-left: 0.25rem;
+    }
+
+    .accordion-button {
+        background: #f8fafc;
+        color: #4b5563;
+        font-weight: 500;
+        padding: 1rem;
+        border: none;
+    }
+
+    .accordion-button:not(.collapsed) {
+        background: #f1f5f9;
+        color: #1f2937;
+        box-shadow: none;
+    }
+
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: #e5e7eb;
+    }
+
+    .accordion-item {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .accordion-body {
+        background: white;
+        padding: 1rem;
+    }
+
+    .token-info {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid rgba(4, 120, 87, 0.2);
+    }
+
+    .cost-info {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid rgba(4, 120, 87, 0.2);
+    }
+
+    .token-badge, .cost-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .token-badge {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .cost-badge {
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    .token-badge i, .cost-badge i {
+        font-size: 0.875rem;
+    }
+
+    .token-badge i {
+        color: #6366f1;
+    }
+
+    .cost-badge i {
+        color: #059669;
+    }
+
+    .cost-badge small {
+        margin-left: 0.5rem;
+        color: #065f46;
+        opacity: 0.75;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12">
+        <h1 class="mb-4">VTT File Processor</h1>
+        
+        <div class="form-section">
+            <form id="uploadForm">
+                <div class="mb-4">
+                    <label class="file-upload-wrapper" for="fileInput" id="dropZone">
+                        <i class="bi bi-cloud-upload"></i>
+                        <h4>Drop your .vtt file here</h4>
+                        <p class="text-muted">or click to browse</p>
+                        <input type="file" id="fileInput" accept=".vtt" hidden>
+                    </label>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="generateArticle" name="generate_article" checked>
+                    <label class="form-check-label" for="generateArticle">
+                        Generate markdown article from transcript
+                    </label>
+                </div>
+
+                <div class="form-group mb-3" id="languageSelect" style="display: none;">
+                    <label for="articleLanguage">Article Language</label>
+                    <select class="form-select" id="articleLanguage" name="article_language">
+                        <option value="pt-BR">Portuguese (Brazil)</option>
+                        <option value="pt-PT">Portuguese (Portugal)</option>
+                        <option value="en">English</option>
+                        <option value="es">Spanish</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100" disabled>
+                    <i class="bi bi-gear"></i> Process File
+                </button>
+            </form>
+
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"></div>
+            </div>
+
+            <div class="alert status-message" role="alert"></div>
+        </div>
+
+        <div id="resultSection" style="display: none;">
+            <h3 class="mb-3">Results</h3>
+            
+            <!-- Cleaned Text Section -->
+            <div class="mb-4">
+                <h4>Cleaned Text</h4>
+                <div class="preview-section">
+                    <div class="vtt-stats mb-3">
+                        <h5 class="mb-2">Processing Statistics</h5>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <i class="bi bi-file-text"></i>
+                                <div class="stat-details">
+                                    <div class="stat-label">Lines</div>
+                                    <div class="stat-value">
+                                        <span id="initialLines">0</span> → <span id="finalLines">0</span>
+                                        <small class="text-muted">(<span id="linesRemoved">0</span> removed)</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <i class="bi bi-clock"></i>
+                                <div class="stat-details">
+                                    <div class="stat-label">Timestamps</div>
+                                    <div class="stat-value">
+                                        <span id="timestampsRemoved">0</span> removed
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <i class="bi bi-123"></i>
+                                <div class="stat-details">
+                                    <div class="stat-label">Line Numbers</div>
+                                    <div class="stat-value">
+                                        <span id="numbersRemoved">0</span> removed
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <i class="bi bi-type"></i>
+                                <div class="stat-details">
+                                    <div class="stat-label">Characters</div>
+                                    <div class="stat-value">
+                                        <span id="initialChars">0</span> → <span id="finalChars">0</span>
+                                        <small class="text-muted">(<span id="charsRemoved">0</span> removed)</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Download button moved to top -->
+                    <a href="#" class="download-btn mb-3" id="downloadCleanedText">
+                        <i class="bi bi-download"></i> Download Cleaned Text
+                    </a>
+
+                    <!-- Accordion for text content -->
+                    <div class="accordion" id="cleanedTextAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#cleanedTextContent">
+                                    View Cleaned Text
+                                </button>
+                            </h2>
+                            <div id="cleanedTextContent" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <pre id="cleanedText" style="white-space: pre-wrap; margin: 0;"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Article Section -->
+            <div id="articleSection" class="mb-4" style="display: none;">
+                <h4>Generated Article</h4>
+                <div class="preview-section">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="preview-tab" data-bs-toggle="tab" href="#preview" role="tab">Preview</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="markdown-tab" data-bs-toggle="tab" href="#markdown" role="tab">Markdown</a>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="preview" role="tabpanel">
+                            <div class="markdown-preview" id="markdownPreview"></div>
+                        </div>
+                        <div class="tab-pane fade" id="markdown" role="tabpanel">
+                            <pre id="markdownSource" style="white-space: pre-wrap;"></pre>
+                        </div>
+                    </div>
+
+                    <div id="costInfo" class="cost-info" style="display: none;">
+                        <i class="bi bi-receipt"></i>
+                        <div>
+                            <strong>Processing Information</strong><br>
+                            <div class="token-info">
+                                <div class="token-badge">
+                                    <i class="bi bi-cpu"></i>
+                                    Total: <span id="tokenCount"></span> tokens
+                                </div>
+                                <div class="token-badge">
+                                    <i class="bi bi-arrow-down"></i>
+                                    Input: <span id="promptTokens"></span> tokens
+                                </div>
+                                <div class="token-badge">
+                                    <i class="bi bi-arrow-up"></i>
+                                    Output: <span id="completionTokens"></span> tokens
+                                </div>
+                            </div>
+                            <div class="cost-info">
+                                <div class="cost-badge">
+                                    <i class="bi bi-currency-dollar"></i>
+                                    Total: $<span id="costAmount"></span>
+                                </div>
+                                <div class="cost-badge">
+                                    <i class="bi bi-arrow-down"></i>
+                                    Input: $<span id="inputCost"></span>
+                                    <small>($10.00 per 1M tokens)</small>
+                                </div>
+                                <div class="cost-badge">
+                                    <i class="bi bi-arrow-up"></i>
+                                    Output: $<span id="outputCost"></span>
+                                    <small>($30.00 per 1M tokens)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="#" class="download-btn" id="downloadArticle">
+                        <i class="bi bi-download"></i> Download Article
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div class="mt-5">
+            <h3 class="mb-4">Processing History</h3>
+            {% if vtt_files %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Original File</th>
+                            <th>Language</th>
+                            <th>Date</th>
+                            <th>Stats</th>
+                            <th>Tokens</th>
+                            <th>Cost</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in vtt_files %}
+                        <tr>
+                            <td>{{ file.original_filename or 'Unknown' }}</td>
+                            <td>{{ file.language or 'N/A' }}</td>
+                            <td>{{ file.timestamp.split('T')[0] }}</td>
+                            <td>
+                                {% if file.vtt_stats %}
+                                <small class="text-muted">
+                                    Lines: {{ file.vtt_stats.initial_lines }} → {{ file.vtt_stats.final_lines }}<br>
+                                    Timestamps: {{ file.vtt_stats.timestamps_removed }} removed
+                                </small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if file.tokens_used %}
+                                <small class="text-muted">
+                                    Total: {{ file.tokens_used.total_tokens }}<br>
+                                    Input: {{ file.tokens_used.prompt_tokens }}<br>
+                                    Output: {{ file.tokens_used.completion_tokens }}
+                                </small>
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if file.costs %}
+                                <small class="text-muted">
+                                    Total: ${{ "%.4f"|format(file.costs.total_cost) }}<br>
+                                    Input: ${{ "%.4f"|format(file.costs.input_cost) }}<br>
+                                    Output: ${{ "%.4f"|format(file.costs.output_cost) }}
+                                </small>
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{{ url_for('download_file', filename=file.cleaned_filename) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-download"></i> Text
+                                    </a>
+                                    {% if file.article_filename %}
+                                    <a href="{{ url_for('download_file', filename=file.article_filename) }}" 
+                                       class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-download"></i> Article
+                                    </a>
+                                    {% endif %}
+                                    <button class="btn btn-sm btn-outline-danger delete-vtt" 
+                                            data-filename="{{ file.cleaned_filename }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No processing history available.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/markdown.min.js"></script>
+<script>
+    const form = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const progressBar = document.querySelector('.progress');
+    const progressBarInner = document.querySelector('.progress-bar');
+    const statusMessage = document.querySelector('.status-message');
+    const resultSection = document.getElementById('resultSection');
+    const articleSection = document.getElementById('articleSection');
+    const cleanedText = document.getElementById('cleanedText');
+    const markdownPreview = document.getElementById('markdownPreview');
+    const markdownSource = document.getElementById('markdownSource');
+    const costInfo = document.getElementById('costInfo');
+    const tokenCount = document.getElementById('tokenCount');
+    const costAmount = document.getElementById('costAmount');
+    const downloadCleanedText = document.getElementById('downloadCleanedText');
+    const downloadArticle = document.getElementById('downloadArticle');
+    const promptTokens = document.getElementById('promptTokens');
+    const completionTokens = document.getElementById('completionTokens');
+    const inputCost = document.getElementById('inputCost');
+    const outputCost = document.getElementById('outputCost');
+    const initialLines = document.getElementById('initialLines');
+    const finalLines = document.getElementById('finalLines');
+    const linesRemoved = document.getElementById('linesRemoved');
+    const timestampsRemoved = document.getElementById('timestampsRemoved');
+    const numbersRemoved = document.getElementById('numbersRemoved');
+    const initialChars = document.getElementById('initialChars');
+    const finalChars = document.getElementById('finalChars');
+    const charsRemoved = document.getElementById('charsRemoved');
+    const generateArticleCheckbox = document.getElementById('generateArticle');
+    const languageSelect = document.getElementById('languageSelect');
+
+    // Initialize marked with options
+    marked.setOptions({
+        breaks: true,
+        gfm: true
+    });
+
+    // Initialize highlight.js
+    hljs.highlightAll();
+
+    // Drag and drop handling
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlightDropZone, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlightDropZone, false);
+    });
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function highlightDropZone(e) {
+        dropZone.classList.add('drag-over');
+    }
+
+    function unhighlightDropZone(e) {
+        dropZone.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+        handleFileSelect();
+    }
+
+    fileInput.addEventListener('change', handleFileSelect);
+
+    function handleFileSelect() {
+        const file = fileInput.files[0];
+        if (file) {
+            if (!file.name.endsWith('.vtt')) {
+                showStatus('Please select a .vtt file', 'danger');
+                submitButton.disabled = true;
+                return;
+            }
+            submitButton.disabled = false;
+            showStatus(`File selected: ${file.name}`, 'info');
+        }
+    }
+
+    function showStatus(message, type = 'info') {
+        statusMessage.textContent = message;
+        statusMessage.className = `alert status-message alert-${type}`;
+        statusMessage.style.display = 'block';
+    }
+
+    function hideStatus() {
+        statusMessage.style.display = 'none';
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        submitButton.disabled = true;
+        progressBar.style.display = 'block';
+        progressBarInner.style.width = '0%';
+        hideStatus();
+
+        try {
+            const formData = new FormData(form);
+            formData.append('file', fileInput.files[0]);
+            
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 5;
+                if (progress > 90) clearInterval(progressInterval);
+                progressBarInner.style.width = `${progress}%`;
+            }, 500);
+
+            showStatus('Processing file...', 'info');
+
+            const response = await fetch('/process-vtt', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Processing failed');
+            }
+
+            const data = await response.json();
+            
+            clearInterval(progressInterval);
+            progressBarInner.style.width = '100%';
+            
+            // Display results
+            resultSection.style.display = 'block';
+            cleanedText.textContent = data.cleaned_text;
+            downloadCleanedText.href = data.cleaned_file_url;
+
+            if (data.article) {
+                articleSection.style.display = 'block';
+                markdownPreview.innerHTML = marked.parse(data.article.markdown);
+                markdownSource.textContent = data.article.markdown;
+                downloadArticle.href = data.article.download_url;
+                
+                // Calculate costs with updated pricing
+                const promptCost = (data.article.prompt_tokens / 1_000_000) * 10.00;
+                const completionCost = (data.article.completion_tokens / 1_000_000) * 30.00;
+                
+                // Show detailed cost information
+                costInfo.style.display = 'flex';
+                tokenCount.textContent = data.article.tokens_used.toLocaleString();
+                promptTokens.textContent = data.article.prompt_tokens.toLocaleString();
+                completionTokens.textContent = data.article.completion_tokens.toLocaleString();
+                inputCost.textContent = promptCost.toFixed(4);
+                outputCost.textContent = completionCost.toFixed(4);
+                costAmount.textContent = (promptCost + completionCost).toFixed(4);
+
+                // Re-run syntax highlighting
+                hljs.highlightAll();
+            } else {
+                articleSection.style.display = 'none';
+            }
+
+            if (data.vtt_stats) {
+                // Update VTT processing stats
+                initialLines.textContent = data.vtt_stats.initial_lines.toLocaleString();
+                finalLines.textContent = data.vtt_stats.final_lines.toLocaleString();
+                linesRemoved.textContent = data.vtt_stats.lines_removed.toLocaleString();
+                timestampsRemoved.textContent = data.vtt_stats.timestamps_removed.toLocaleString();
+                numbersRemoved.textContent = data.vtt_stats.numbers_removed.toLocaleString();
+                initialChars.textContent = data.vtt_stats.initial_chars.toLocaleString();
+                finalChars.textContent = data.vtt_stats.final_chars.toLocaleString();
+                charsRemoved.textContent = data.vtt_stats.chars_removed.toLocaleString();
+            }
+
+            showStatus('Processing completed successfully!', 'success');
+        } catch (err) {
+            showStatus(err.message, 'danger');
+        } finally {
+            submitButton.disabled = false;
+            setTimeout(() => {
+                progressBar.style.display = 'none';
+                hideStatus();
+            }, 3000);
+        }
+    });
+
+    // Show/hide language select based on generate article checkbox
+    generateArticleCheckbox.addEventListener('change', function() {
+        languageSelect.style.display = this.checked ? 'block' : 'none';
+    });
+
+    // Initialize language select visibility
+    languageSelect.style.display = generateArticleCheckbox.checked ? 'block' : 'none';
+
+    // Add delete functionality
+    document.querySelectorAll('.delete-vtt').forEach(button => {
+        button.addEventListener('click', async function() {
+            if (!confirm('Are you sure you want to delete this entry?')) return;
+            
+            const filename = this.dataset.filename;
+            try {
+                const response = await fetch(`/delete-vtt/${filename}`, {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) throw new Error('Delete failed');
+                
+                // Remove the table row
+                this.closest('tr').remove();
+                
+                // Show success message
+                showStatus('Entry deleted successfully', 'success');
+                
+                // If no more entries, show the "no history" message
+                if (document.querySelectorAll('tbody tr').length === 0) {
+                    const table = document.querySelector('.table-responsive');
+                    table.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> No processing history available.
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                showStatus('Failed to delete entry', 'danger');
+            }
+        });
+    });
+</script>
+{% endblock %} 

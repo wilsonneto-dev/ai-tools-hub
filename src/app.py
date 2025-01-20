@@ -3,23 +3,28 @@ from pathlib import Path
 import os
 from lib.text_to_speech import convert_text_to_speech, AVAILABLE_VOICES
 from lib.translations import SUPPORTED_LANGUAGES
+from lib.vtt_processor import clean_vtt_content, generate_article
 import uuid
 from openai import OpenAI
 from datetime import datetime
 import json
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = Path(__file__).parent / "data" / "temp"
+app.config['UPLOAD_FOLDER'] = Path(__file__).parent / "static" / "files"
 app.config['STATIC_AUDIO'] = Path(__file__).parent / "static" / "audio"
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['STATIC_AUDIO'], exist_ok=True)
 
 AUDIO_METADATA_FILE = Path(__file__).parent / "static" / "audio_metadata.json"
-if not AUDIO_METADATA_FILE.exists():
-    with open(AUDIO_METADATA_FILE, 'w') as f:
-        json.dump([], f)
+VTT_METADATA_FILE = Path(__file__).parent / "static" / "vtt_metadata.json"
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Initialize metadata files if they don't exist
+for metadata_file in [AUDIO_METADATA_FILE, VTT_METADATA_FILE]:
+    if not metadata_file.exists():
+        with open(metadata_file, 'w') as f:
+            json.dump([], f)
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY_HEY_BRO"))
 
 def save_audio_metadata(filename, title, text, target_lang, voice, duration=None, tokens_used=None, costs=None):
     try:
@@ -48,6 +53,36 @@ def save_audio_metadata(filename, title, text, target_lang, voice, duration=None
 def get_audio_metadata():
     try:
         with open(AUDIO_METADATA_FILE, 'r') as f:
+            return json.load(f)
+    except:
+        return []
+
+def save_vtt_metadata(cleaned_filename, article_filename=None, original_filename=None, language=None, vtt_stats=None, tokens_used=None, costs=None):
+    try:
+        with open(VTT_METADATA_FILE, 'r') as f:
+            metadata = json.load(f)
+    except:
+        metadata = []
+    
+    metadata.append({
+        'cleaned_filename': cleaned_filename,
+        'article_filename': article_filename,
+        'original_filename': original_filename,
+        'language': language,
+        'timestamp': datetime.now().isoformat(),
+        'vtt_stats': vtt_stats or {},
+        'tokens_used': tokens_used or {},
+        'costs': costs or {}
+    })
+    
+    metadata = metadata[-50:]  # Keep only last 50 entries
+    
+    with open(VTT_METADATA_FILE, 'w') as f:
+        json.dump(metadata, f)
+
+def get_vtt_metadata():
+    try:
+        with open(VTT_METADATA_FILE, 'r') as f:
             return json.load(f)
     except:
         return []
@@ -147,6 +182,132 @@ def delete_audio(filename):
                 json.dump(metadata, f)
             
             return jsonify({'status': 'success'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/vtt-processor')
+def vtt_processor():
+    vtt_files = get_vtt_metadata()
+    vtt_files.reverse()  # Show newest first
+    return render_template('vtt-processor.html', vtt_files=vtt_files)
+
+@app.route('/process-vtt', methods=['POST'])
+def process_vtt():
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file uploaded'}), 400
+            
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+            
+        if not file.filename.endswith('.vtt'):
+            return jsonify({'error': 'Invalid file type. Please upload a .vtt file'}), 400
+        
+        # Read and clean VTT content
+        content = file.read().decode('utf-8')
+        cleaned_text, vtt_stats = clean_vtt_content(content)
+        
+        # Generate unique filenames
+        cleaned_filename = f"cleaned_{uuid.uuid4()}.txt"
+        cleaned_path = app.config['UPLOAD_FOLDER'] / cleaned_filename
+        
+        # Save cleaned text
+        with open(cleaned_path, 'w', encoding='utf-8') as f:
+            f.write(cleaned_text)
+        
+        # Generate article if requested
+        generate_article_flag = request.form.get('generate_article') == 'on'
+        article_result = None
+        article_filename = None
+        language = request.form.get('article_language', 'en')
+        
+        if generate_article_flag:
+            result = generate_article(cleaned_text, language)
+            article_filename = f"article_{uuid.uuid4()}.md"
+            article_path = app.config['UPLOAD_FOLDER'] / article_filename
+            
+            with open(article_path, 'w', encoding='utf-8') as f:
+                f.write(result.markdown_article)
+                
+            article_result = {
+                'markdown': result.markdown_article,
+                'download_url': url_for('download_file', filename=article_filename),
+                'tokens_used': result.total_tokens,
+                'prompt_tokens': result.prompt_tokens,
+                'completion_tokens': result.completion_tokens,
+                'cost': result.total_cost,
+                'input_cost': (result.prompt_tokens / 1_000_000) * 10.00,
+                'output_cost': (result.completion_tokens / 1_000_000) * 30.00,
+                'vtt_stats': result.vtt_stats
+            }
+            
+            # Save metadata
+            save_vtt_metadata(
+                cleaned_filename=cleaned_filename,
+                article_filename=article_filename,
+                original_filename=file.filename,
+                language=language,
+                vtt_stats=vtt_stats,
+                tokens_used={
+                    'total_tokens': result.total_tokens,
+                    'prompt_tokens': result.prompt_tokens,
+                    'completion_tokens': result.completion_tokens
+                },
+                costs={
+                    'input_cost': (result.prompt_tokens / 1_000_000) * 10.00,
+                    'output_cost': (result.completion_tokens / 1_000_000) * 30.00,
+                    'total_cost': result.total_cost
+                }
+            )
+        else:
+            # Save metadata without article information
+            save_vtt_metadata(
+                cleaned_filename=cleaned_filename,
+                original_filename=file.filename,
+                vtt_stats=vtt_stats
+            )
+        
+        return jsonify({
+            'status': 'success',
+            'cleaned_text': cleaned_text,
+            'cleaned_file_url': url_for('download_file', filename=cleaned_filename),
+            'article': article_result,
+            'vtt_stats': vtt_stats
+        })
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/download/<filename>')
+def download_file(filename):
+    try:
+        return send_file(
+            app.config['UPLOAD_FOLDER'] / filename,
+            as_attachment=True
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
+@app.route('/delete-vtt/<filename>', methods=['POST'])
+def delete_vtt(filename):
+    try:
+        # Delete both cleaned and article files if they exist
+        for file_path in [
+            app.config['UPLOAD_FOLDER'] / filename,
+            app.config['UPLOAD_FOLDER'] / f"article_{filename}"
+        ]:
+            if file_path.exists():
+                os.remove(file_path)
+        
+        # Update metadata
+        with open(VTT_METADATA_FILE, 'r') as f:
+            metadata = json.load(f)
+        metadata = [m for m in metadata if m['cleaned_filename'] != filename]
+        with open(VTT_METADATA_FILE, 'w') as f:
+            json.dump(metadata, f)
+        
+        return jsonify({'status': 'success'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
