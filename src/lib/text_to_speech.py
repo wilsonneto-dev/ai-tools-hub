@@ -32,7 +32,7 @@ AVAILABLE_VOICES = {
     'shimmer': 'Shimmer - Clear and dynamic female voice, excellent for presentations'
 }
 
-def split_text(text, max_length=500):
+def split_text(text, max_length=4000):
     """Split text into chunks for text-to-speech conversion."""
     print(f"Text length = {len(text)}")
     chunks = []
