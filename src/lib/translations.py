@@ -2,7 +2,7 @@ from openai import OpenAI
 import os
 from dataclasses import dataclass
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY_HEY_BRO"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @dataclass
 class TranslationResult:
